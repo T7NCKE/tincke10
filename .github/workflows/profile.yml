@@ -25,7 +25,7 @@ jobs:
         run: python3 scripts/render.py
       - name: Commit
         run: |
-          git config user.name tincke10
+          git config user.name T7NCKE
           git config user.email martinmoreiralmq@gmail.com
           git add -A session.svg pills README.md
           if git diff --cached --quiet; then echo "no changes"; else git commit -m "chore: render profile" && git push; fi

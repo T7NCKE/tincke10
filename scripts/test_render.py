@@ -84,3 +84,17 @@ class Readme(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class Login(unittest.TestCase):
+    def test_defaults_to_current_account_outside_actions(self):
+        self.assertEqual(render.login({}), "T7NCKE")
+
+    def test_follows_repository_owner_inside_actions(self):
+        self.assertEqual(render.login({"GITHUB_REPOSITORY_OWNER": "someone-else"}), "someone-else")
+
+    def test_ignores_empty_owner(self):
+        self.assertEqual(render.login({"GITHUB_REPOSITORY_OWNER": ""}), "T7NCKE")
+
+    def test_query_targets_given_login(self):
+        self.assertIn('user(login: "someone-else")', render.query("someone-else"))

@@ -20,7 +20,7 @@ import urllib.request
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-LOGIN = "tincke10"
+DEFAULT_LOGIN = "T7NCKE"
 W = 808
 BODY_PAD_X, BODY_PAD_Y = 26, 22
 FONT_PX, LINE_H = 13, 23
@@ -46,12 +46,20 @@ NOW_LINES = [
 ]
 WHOAMI = "martin · software engineer | innovation engineering · buenos aires, ar"
 
-QUERY = """
+
+def login(env: dict | None = None) -> str:
+    """GitHub login to render: the repo owner inside Actions, so account renames need no code change."""
+    env = os.environ if env is None else env
+    return env.get("GITHUB_REPOSITORY_OWNER") or DEFAULT_LOGIN
+
+
+def query(login: str) -> str:
+    return """
 { user(login: "%s") {
     pinnedItems(first: 6, types: REPOSITORY) { nodes { ... on Repository { name description url } } }
     contributionsCollection { contributionCalendar { totalContributions weeks { contributionDays { contributionLevel } } } }
 } }
-""" % LOGIN
+""" % login
 
 
 def esc(s: str) -> str:
@@ -177,9 +185,10 @@ def readme_md(pinned: list[dict]) -> str:
 # ---------- data ----------
 
 def fetch(token: str) -> dict:
-    req = urllib.request.Request("https://api.github.com/graphql", data=json.dumps({"query": QUERY}).encode(),
+    who = login()
+    req = urllib.request.Request("https://api.github.com/graphql", data=json.dumps({"query": query(who)}).encode(),
                                  headers={"Authorization": f"bearer {token}", "Content-Type": "application/json",
-                                          "User-Agent": "tincke10-profile"})
+                                          "User-Agent": f"{who}-profile"})
     with urllib.request.urlopen(req) as resp:
         payload = json.load(resp)
     if "errors" in payload:
